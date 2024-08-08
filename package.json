@@ -1,0 +1,26 @@
+{
+  "name": "crapr_api",
+  "version": "1.0",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon src/index.js",
+    "start": "node src/index.js"
+  },
+  "author": "Carson",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "dotenv": "latest",
+    "express": "latest",
+    "express-session": "latest",
+    "jsonwebtoken": "latest",
+    "mongoose": "latest",
+    "passport": "latest",
+    "passport-google-oauth20": "latest",
+    "passport-http-bearer": "^1.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "latest"
+  }
+}
