@@ -14,7 +14,7 @@ passport.use(
             clientSecret: GOOGLE_CLIENT_SECRET,
             callbackURL: GOOGLE_CALLBACK_URL,
         },
-        (_accessToken, _refreshToken, profile, callback) =>
+        (accessToken, refreshToken, profile, callback) =>
             user.findOneAndUpdate(
                 { googleId: profile.id },
                 { $set: {
