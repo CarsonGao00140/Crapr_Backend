@@ -6,7 +6,6 @@ const router = Router();
 
 router.get('/google', (req, res) => {
     const { redirect_url } = req.query;
-
     const state = redirect_url
         ? encodeURI(JSON.stringify({ redirect_url }))
         : undefined;
@@ -22,7 +21,6 @@ router.get('/google/callback', passport.authenticate(
     ),
     (req, res) => {
         const { state } = req.query;
-
         const redirect_url = state
             ? JSON.parse(decodeURI(state)).redirect_url
             : undefined;

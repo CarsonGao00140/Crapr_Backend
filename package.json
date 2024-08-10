@@ -11,16 +11,20 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@google-cloud/storage": "latest",
     "dotenv": "latest",
     "express": "latest",
-    "express-session": "latest",
     "jsonwebtoken": "latest",
+    "lodash": "latest",
     "mongoose": "latest",
+    "multer": "latest",
     "passport": "latest",
     "passport-google-oauth20": "latest",
-    "passport-http-bearer": "latest"
+    "passport-http-bearer": "latest",
+    "uuid": "latest"
   },
   "devDependencies": {
     "nodemon": "latest"
-  }
+  },
+  "repository": "https://github.com/CarsonGao00140/CRAPR.git"
 }

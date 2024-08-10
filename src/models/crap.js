@@ -1,5 +1,6 @@
 import { Schema, model } from 'mongoose';
 import user from './user.js';
+import service from '../services/storage.js';
 import { BadRequestError } from '../utilities/error.js';
 
 const validateArrayLength = (array, length) =>
@@ -45,8 +46,46 @@ crapSchema.index({ location: '2dsphere' });
 crapSchema.pre('save', function(next) {
     if (this.buyer?.equals(this.owner))
         return next(new BadRequestError("Buyer and owner cannot be the same."));
-    
-    next();
+
+    service.write(this.images)
+        .then(names => {
+            this.images = names;
+            next();
+        })
+        .catch(next);
+});
+
+crapSchema.post('findOne', function(doc, next) {
+    doc?.images
+        ? service.read(doc.images)
+            .then(data => {
+                doc.images = data;
+                next();
+            })
+            .catch(next)
+        :next();
+});
+
+crapSchema.post('find', function(docs, next) {
+    Promise.all(docs.map(doc =>
+        doc.images
+            ? service.read(doc.images)
+                .then(data => {
+                    doc.images = data;
+                    return doc;
+                })
+            :doc
+    ))
+        .then(() => next())
+        .catch(next);
+});
+
+crapSchema.post('findOneAndDelete', function(doc, next) {
+    doc.images
+        ? service.remove(doc.images)
+            .then(() => next())
+            .catch(next)
+        :next();
 });
 
 export default model('craps', crapSchema);

@@ -1,4 +1,6 @@
-import model from '../models/crap.js'
+import model from '../models/crap.js';
+
+const exists = _id => model.exists({ _id });
 
 const write = model.create.bind(model);
 
@@ -6,8 +8,8 @@ const read = model.findById.bind(model);
 
 const readAll = model.find.bind(model);
 
-const overwrite = (id, data) =>
-    model.findOneAndReplace({_id: id}, data, {
+const overwrite = (_id, data) =>
+    model.findOneAndReplace({ _id }, data, {
         returnDocument: 'after',
         runValidators: true
     });
@@ -18,6 +20,6 @@ const modify = (id, data) =>
         runValidators: true
     });
 
-const remove = id => model.findByIdAndDelete(id);
+const remove = model.findByIdAndDelete.bind(model);
 
-export default { write, read, readAll, overwrite, modify, remove };
+export default { exists, write, read, readAll, overwrite, modify, remove };

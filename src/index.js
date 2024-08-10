@@ -2,6 +2,7 @@ import Express from 'express';
 
 import auth from './routers/auth.js';
 import crap from './routers/crap.js';
+import parseRequest from './middlewares/parseRequest.js';
 import { ErrorHandler } from './utilities/error.js';
 
 import 'dotenv/config';
@@ -10,7 +11,7 @@ import './utilities/passport.js';
 
 const app = Express();
 
-app.use(Express.json());
+app.use(parseRequest);
 
 app.use('/auth', auth);
 app.use('/api/crap', crap);
