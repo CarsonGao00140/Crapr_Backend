@@ -1,6 +1,6 @@
 import model from '../models/crap.js';
 
-const exists = _id => model.exists({ _id });
+const check = _id => model.exists({ _id });
 
 const write = model.create.bind(model);
 
@@ -18,8 +18,8 @@ const modify = (id, data) =>
     model.findByIdAndUpdate(id, data, {
         new: true,
         runValidators: true
-    });
+    })
 
 const remove = model.findByIdAndDelete.bind(model);
 
-export default { exists, write, read, readAll, overwrite, modify, remove };
+export default { check, write, read, readAll, overwrite, modify, remove };
