@@ -26,7 +26,7 @@ const crapSchema = new Schema({
     title: { type: String, minlength: 3, maxlength: 255, required: true },
     description: { type: String, minlength: 3, maxlength: 255, required: true },
     location: { type: pointSchema, required: true},
-    images: { type: [String], required: true},
+    images: { type: [String], required: true, default: undefined},
     status: {
         type: String,
         enum: ['AVAILABLE', 'INTERESTED', 'SCHEDULED', 'AGREED', 'FLUSHED'],

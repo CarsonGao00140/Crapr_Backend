@@ -6,9 +6,10 @@ export default (req, res, next) => {
     const { id } = req.params;
     if (!isValidObjectId(id)) throw new BadRequestError("Invalid ID.");
 
-    mongo.check(id)
-        .then(result => {
-            if (!result) throw new DataNotFoundError(id);
+    mongo.read(id)
+        .then(data => {
+            if (!data) throw new DataNotFoundError(id);
+            req.doc = data;
             next();
         })
         .catch(next);

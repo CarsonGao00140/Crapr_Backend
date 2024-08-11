@@ -2,7 +2,7 @@ import { MongooseError } from 'mongoose';
 
 class BadRequestError extends Error {
     constructor(message) {
-        const fullMessage = message ? `Bad Request: ${message}` : "Bad Request.";
+        const fullMessage = `Bad Request${message ? `: ${message}` : '.'}`;
         super(fullMessage);
         this.code = 400;
     }
@@ -19,8 +19,11 @@ class UnauthenticatedError extends Error {
 };
 
 class ForbiddenError extends Error {
-    code = 403;
-    message = "You do not have permission.";
+    constructor(message) {
+        const fullMessage = `Access Denied${message ? `: ${message}` : '.'}`;
+        super(fullMessage);
+        this.code = 403;
+    }
 };
 
 class UserNotFoundError extends Error {
