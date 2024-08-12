@@ -16,7 +16,7 @@ app.use(parseRequest);
 app.use('/auth', auth);
 app.use('/api/crap', crap);
 
-// app.use(ErrorHandler);
+app.use(ErrorHandler);
 
 const port = process.env.PORT || 9124;
 app.listen(port, () =>
