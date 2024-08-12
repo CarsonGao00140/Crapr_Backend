@@ -1,23 +1,34 @@
-import model from '../models/crap.js';
+import Crap from '../models/crap.js';
 import gcs from '../services/gcs.js';
 import mongo from '../services/mongo.js';
+import checkAuth from '../utilities/checkAuth.js';
 import { BadRequestError, ForbiddenError } from '../utilities/error.js';
 
-const checkRequest = ({ body, user }) => { if(body.owner && body.owner !== user.id)
-    throw new ForbiddenError("You can't set the owner to someone else");
+const checkRequest = ({ body, user }) => {
+    if(body.owner && body.owner !== user.id)
+        throw new ForbiddenError("You can't set the owner to someone else");
+    if(body.buyer)
+        throw new BadRequestError("You can't set the buyer");
 };
-const checkAuth = ({ doc, user }) => { if(!doc.owner.equals(user.id))
-    throw new ForbiddenError("You are not the owner of this crap");
-};
-const clearSensitive = ({ _doc: { location, buyer, suggestion, ...rest } }) => rest;
 
+const clearSensitive = ({ location, buyer, suggestion, ...rest }) => rest;
+
+const insertUser = data =>
+    mongo.readUser(data.owner)
+        .then(owner => ({...data, owner }))
+            .then(data => data.buyer
+                ? mongo.readUser(data.buyer)
+                    .then(buyer => ({...data, buyer }))
+                : data
+            )
+            
 const create = (req, res, next) => {
     checkRequest(req);
     
-    const crap = new model(req.body);
+    const crap = new Crap(req.body);
     crap.validate()
         .then(() => gcs.write(crap))
-        .then(() => crap.save())
+        .then(() => crap.save({ validateBeforeSave: false }))
         .then(data => res.status(201).json({ data }))
         .catch(next);
 };
@@ -41,8 +52,11 @@ const getAll = (req, res, next) => {
             }
         }
     })
-        .then(data => data.map(clearSensitive))
-        .then(data => Promise.all(data.map(item => gcs.read(item).then(() => item))))
+        .then(docs => Promise.all(docs.map(doc =>
+            gcs.read(doc)
+                .then(clearSensitive)
+                .then(insertUser)
+        )))
         .then(data => res.json({ data }))
         .catch(next);
 };
@@ -54,49 +68,58 @@ const getPartial = (req, res, next) =>
             { buyer: req.user.id }
         ]
     })
-        .then(data => Promise.all(data.map(item => gcs.read(item).then(() => item))))
+        .then(docs => Promise.all(docs.map(doc =>
+            gcs.read(doc)
+                .then(insertUser)
+        )))
         .then(data => res.json({ data }))
         .catch(next);
 
 const get = (req, res, next) => {
-    const related = req.doc.owner.equals(req.user.id) || req.doc.buyer.equals(req.user.id);
+    const related = req.doc.owner.equals(req.user.id) || req.doc.buyer?.equals(req.user.id);
 
-    gcs.read(related ? req.doc : clearSensitive(req.doc))
-        .then(() => res.json({ data: req.doc }))
+    gcs.read(req.doc)
+        .then(data => related ? data : clearSensitive(data))
+        .then(insertUser)
+        .then(data => res.json({ data }))
         .catch(next);
 };
 
 const update = (req, res, next) => {
     checkRequest(req);
-    checkAuth(req);
+    checkAuth(req, 'owner');
 
     const { images } = req.doc;
     req.doc.overwrite({});
     req.doc.set(req.body);
     req.doc.validate()
-        .then(() => gcs.remove({ images }))
-        .then(() => gcs.write(req.doc))
-        .then(() => req.doc.save())
+        .then(() => Promise.all([
+            gcs.remove({ images }),
+            gcs.write(req.doc)
+        ]))
+        .then(() => req.doc.save({ validateBeforeSave: false }))
         .then(data => res.json({ data }))
         .catch(next);
 };
 
 const updatePartial = (req, res, next) => {
     checkRequest(req);
-    checkAuth(req);
+    checkAuth(req, 'owner');
 
     const { images } = req.doc;
     req.doc.set(req.body);
     req.doc.validate()
-        .then(() => req.body.images && gcs.remove({ images }))
-        .then(() => req.body.images && gcs.write(req.doc))
-        .then(() => req.doc.save())
+        .then(() => req.body.images && Promise.all([
+            gcs.remove({ images }),
+            gcs.write(req.doc)
+        ]))
+        .then(() => req.doc.save({ validateBeforeSave: false }))
         .then(data => res.json({ data }))
         .catch(next);
 };
 
 const remove = (req, res, next) => {
-    checkAuth(req);
+    checkAuth(req, 'owner');
 
     req.doc.deleteOne()
         .then(gcs.remove)

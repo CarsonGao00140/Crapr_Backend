@@ -1,7 +1,10 @@
-import model from '../models/crap.js';
+import crap from '../models/crap.js';
+import user from '../models/user.js';
 
-const read = model.findById.bind(model);
+const read = id => crap.findById(id)
 
-const readAll = model.find.bind(model);
+const readAll = crap.find.bind(crap);
 
-export default { read, readAll };
+const readUser = id => user.findById(id).select('id name');
+
+export default { read, readAll, readUser };

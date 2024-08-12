@@ -33,15 +33,7 @@ const crapSchema = new Schema({
         default: 'AVAILABLE'
     },
     owner: { type: Schema.Types.ObjectId, ref: user, required: true },
-    buyer: { 
-        type: Schema.Types.ObjectId, ref: 'User',
-        validate: {
-            validator: function(id) {
-                return !this.owner.equals(id);
-            },
-            message: "Buyer cannot be the same as the owner."
-        }
-    },
+    buyer: { type: Schema.Types.ObjectId, ref: 'User'},
     suggestion: { type: suggestionSchema }
 }, {
     timestamps: true
