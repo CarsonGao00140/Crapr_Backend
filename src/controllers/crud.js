@@ -43,7 +43,7 @@ const getAll = (req, res, next) => {
             { title: { $regex: query, $options: 'i' } },
             { description: { $regex: query, $options: 'i' } }
         ],
-        status: show_taken ? { $ne: 'FLUSHED' } : 'AVAILABLE',
+        status: show_taken === 'true' ? { $ne: 'FLUSHED' } : 'AVAILABLE',
         location: {
             $near: {
                 $geometry: { type: "Point", coordinates: [long, lat] },
@@ -53,7 +53,10 @@ const getAll = (req, res, next) => {
     })
         .then(docs => Promise.all(docs.map(doc =>
             gcs.read(doc)
-                .then(clearSensitive)
+                .then(data => checkAuth({...req, doc: doc}, ['owner', 'buyer'], true)
+                    ? data
+                    : clearSensitive(data)
+                )
                 .then(insertUser)
         )))
         .then(data => res.json({ data }))

@@ -1,4 +1,5 @@
 import checkAuth from '../utilities/checkAuth.js';
+import insertUser from '../utilities/insertUser.js';
 import { BadRequestError, ForbiddenError } from '../utilities/error.js';
 
 const stepStatus = ({ doc }, current, next) => {
@@ -14,6 +15,7 @@ const interested = (req, res, next) => {
 
     req.doc.buyer = req.user.id;
     req.doc.save()
+        .then(({ _doc }) => insertUser(_doc))
         .then(data => res.json({ data }))
         .catch(next);
 };
@@ -24,6 +26,7 @@ const suggest = (req, res, next) => {
 
     req.doc.set({ suggestion: req.body });
     req.doc.save()
+        .then(({ _doc }) => insertUser(_doc))
         .then(data => res.json({ data }))
         .catch(next);
 };
@@ -33,6 +36,7 @@ const agree = (req, res, next) => {
     stepStatus(req, 'SCHEDULED', 'AGREED');
 
     req.doc.save()
+        .then(({ _doc }) => insertUser(_doc))
         .then(data => res.json({ data }))
         .catch(next);
 };
@@ -44,6 +48,7 @@ const disagree = (req, res, next) => {
     const { suggestion, ...rest} = req.doc._doc;
     req.doc.overwrite(rest);
     req.doc.save()
+        .then(({ _doc }) => insertUser(_doc))
         .then(data => res.json({ data }))
         .catch(next);
 };
@@ -57,6 +62,7 @@ const reset = (req, res, next) => {
     const { suggestion, buyer, ...rest} = req.doc._doc;
     req.doc.overwrite(rest);
     req.doc.save()
+        .then(({ _doc }) => insertUser(_doc))
         .then(data => res.json({ data }))
         .catch(next);
 };

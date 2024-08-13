@@ -19,17 +19,20 @@ router.get('/google', (req, res) => {
     })(req, res);
 });
 
-router.get('/google/callback', passport.authenticate(
-    "google", { failureRedirect: "/fail", session: false }
-),
-(req, res) => {
-    const redirect_url = req.query.state
-        ? JSON.parse(decodeURI(req.query.state)).redirect_url
-        : "/success";
+router.get('/google/callback',
+    passport.authenticate(
+        "google", { failureRedirect: "/fail", session: false }
+    ),
+    (req, res) => {
+        const url = req.query.state
+            ? JSON.parse(decodeURI(req.query.state)).redirect_url
+            : "/success";
 
-    const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET);
-    res.redirect(`${redirect_url}?token=${token}`);
-});
+        const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET);
+        res.cookie('token', encodeURIComponent(token));
+        res.redirect(url);
+    }
+);
 
 router.get('/fail', (req, res) =>
     res.send("Something went wrong during Sign in with Google.")); 

@@ -12,6 +12,8 @@
   "description": "",
   "dependencies": {
     "@google-cloud/storage": "latest",
+    "cookie": "latest",
+    "cors": "latest",
     "dotenv": "latest",
     "express": "latest",
     "jsonwebtoken": "latest",

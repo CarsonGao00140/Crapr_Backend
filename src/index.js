@@ -1,4 +1,5 @@
 import Express from 'express';
+import cors from 'cors';
 
 import auth from './routers/auth.js';
 import crap from './routers/crap.js';
@@ -8,7 +9,11 @@ import 'dotenv/config';
 import './utilities/database.js';
 import './utilities/passport.js';
 
+const strategy = { origin: process.env.WEB_URL, credentials: true };
+
 const app = Express();
+
+app.use(cors(strategy));
 
 app.use('/auth', auth);
 app.use('/api/crap', crap);
