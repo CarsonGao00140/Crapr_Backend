@@ -1,7 +1,7 @@
 import crap from '../models/crap.js';
 import user from '../models/user.js';
 
-const read = id => crap.findById(id)
+const read = crap.findById.bind(crap);
 
 const readAll = crap.find.bind(crap);
 

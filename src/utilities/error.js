@@ -8,14 +8,12 @@ class BadRequestError extends Error {
     }
 }
 
-class NoValidTokenError extends Error {
-    code = 401;
-    message = "Invalid or missing JWT.";
-};
-
 class UnauthenticatedError extends Error {
-    code = 401;
-    message = "Unauthenticated.";
+    constructor(message) {
+        const fullMessage = `Unauthenticated${message ? `: ${message}` : '.'}`;
+        super(fullMessage);
+        this.code = 401;
+    }
 };
 
 class ForbiddenError extends Error {
@@ -26,32 +24,26 @@ class ForbiddenError extends Error {
     }
 };
 
-class UserNotFoundError extends Error {
-    code = 404;
-    message = "No user found for the provided token."
-};
-
-class DataNotFoundError extends Error {
-    constructor(id) {
-        super(`Crap with id ${id} not found`);
+class NotFoundError extends Error {
+    constructor(message) {
+        const fullMessage = `Not Found${message ? `: ${message}` : '.'}`;
+        super(fullMessage);
         this.code = 404;
     }
-};
+}
 
 const ErrorHandler = (err, req, res, next) => {
     if (err instanceof MongooseError) err.code = 400;
     
-    res.status(err.code || 405).json({
+    res.status(err.code || 500).json({
         error: {message: err.message}
     });
 };
 
 export {
     BadRequestError,
-    NoValidTokenError,
     UnauthenticatedError,
     ForbiddenError,
-    UserNotFoundError,
-    DataNotFoundError,
+    NotFoundError,
     ErrorHandler
 };

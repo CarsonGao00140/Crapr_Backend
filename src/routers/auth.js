@@ -1,8 +1,11 @@
 import { Router } from 'express';
 import passport from 'passport';
 import jwt from 'jsonwebtoken';
+import handleRequest from '../middlewares/handleRequest.js';
 
 const router = Router();
+
+router.use(handleRequest());
 
 router.get('/google', (req, res) => {
     const { redirect_url } = req.query;
@@ -17,19 +20,18 @@ router.get('/google', (req, res) => {
 });
 
 router.get('/google/callback', passport.authenticate(
-        "google", { failureRedirect: "/fail", session: false }
-    ),
-    (req, res) => {
-        const { state } = req.query;
-        const redirect_url = state
-            ? JSON.parse(decodeURI(state)).redirect_url
-            : undefined;
+    "google", { failureRedirect: "/fail", session: false }
+),
+(req, res) => {
+    const redirect_url = req.query.state
+        ? JSON.parse(decodeURI(req.query.state)).redirect_url
+        : "/success";
 
-        const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET);
-        res.redirect(`${redirect_url ?? "/success"}?token=${token}`);
-    }
-);
+    const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET);
+    res.redirect(`${redirect_url}?token=${token}`);
+});
 
-router.get('/fail', (req, res) => res.send('Failed to log in!'));
+router.get('/fail', (req, res) =>
+    res.send("Something went wrong during Sign in with Google.")); 
 
 export default router;

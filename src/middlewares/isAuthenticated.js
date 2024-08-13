@@ -1,8 +1,9 @@
 import passport from 'passport';
-import { NoValidTokenError } from '../utilities/error.js';
+import { UnauthenticatedError } from '../utilities/error.js';
 
 export default (req, res, next) => {
-    if (!req.headers.authorization) throw new NoValidTokenError;
+    if (!req.headers.authorization)
+        throw new UnauthenticatedError("JWT token not provided.");
 
     return passport.authenticate("bearer", {
         session: false,

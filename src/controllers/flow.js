@@ -8,30 +8,28 @@ const stepStatus = ({ doc }, current, next) => {
 };
 
 const interested = (req, res, next) => {
-    if (req.doc.owner.equals(req.user.id)) { throw new BadRequestError("You can't be interested in your own crap."); }
+    if (checkAuth(req, ['owner'], true))
+        throw new BadRequestError("You can't be interested in your own crap.");
     stepStatus(req, 'AVAILABLE', 'INTERESTED');
+
     req.doc.buyer = req.user.id;
-    
     req.doc.save()
-        .then()
         .then(data => res.json({ data }))
         .catch(next);
 };
 
 const suggest = (req, res, next) => {
-    checkAuth(req, 'owner');
-    const { suggestion, ...rest} = req.body;
-    if (Object.keys(rest).length) throw new BadRequestError("No fields allowed except 'suggestion'.");
+    checkAuth(req, ['owner']);
     stepStatus(req, 'INTERESTED', 'SCHEDULED');
 
-    req.doc.set({ suggestion });
+    req.doc.set({ suggestion: req.body });
     req.doc.save()
         .then(data => res.json({ data }))
         .catch(next);
 };
 
 const agree = (req, res, next) => {
-    checkAuth(req, 'buyer');
+    checkAuth(req, ['buyer']);
     stepStatus(req, 'SCHEDULED', 'AGREED');
 
     req.doc.save()
@@ -40,10 +38,10 @@ const agree = (req, res, next) => {
 };
 
 const disagree = (req, res, next) => {
-    checkAuth(req, 'buyer');
+    checkAuth(req, ['buyer']);
     stepStatus(req, 'SCHEDULED', 'INTERESTED');
-    const { suggestion, ...rest} = req.doc._doc;
 
+    const { suggestion, ...rest} = req.doc._doc;
     req.doc.overwrite(rest);
     req.doc.save()
         .then(data => res.json({ data }))
@@ -51,12 +49,12 @@ const disagree = (req, res, next) => {
 };
 
 const reset = (req, res, next) => {
-    if(!(req.doc.buyer.equals(req.user.id) || req.doc.owner.equals(req.user.id)))
-        throw new ForbiddenError("You are not the owner or buyer of this crap");
-    if (req.doc.status === 'FLUSHED') throw new ForbiddenError("Crap is already flushed.");
+    checkAuth(req, ['owner', 'buyer']);
+    if (req.doc.status === 'FLUSHED')
+        throw new ForbiddenError("Crap is already flushed.");
     stepStatus(req, undefined, 'AVAILABLE');
-    const { suggestion, buyer, ...rest} = req.doc._doc;
 
+    const { suggestion, buyer, ...rest} = req.doc._doc;
     req.doc.overwrite(rest);
     req.doc.save()
         .then(data => res.json({ data }))
@@ -64,7 +62,7 @@ const reset = (req, res, next) => {
 };
 
 const flush = (req, res, next) => {
-    checkAuth(req, 'owner');
+    checkAuth(req, ['owner']);
     stepStatus(req, 'AGREED', 'FLUSHED');
 
     req.doc.save()

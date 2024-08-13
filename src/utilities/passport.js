@@ -3,7 +3,7 @@ import GoogleStrategy from 'passport-google-oauth20';
 import BearerStrategy from 'passport-http-bearer';
 import jwt from 'jsonwebtoken';
 import user from '../models/user.js';
-import { UnauthenticatedError, UserNotFoundError } from './error.js';
+import { UnauthenticatedError, NotFoundError } from './error.js';
 
 const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_CALLBACK_URL } = process.env;
 
@@ -33,13 +33,13 @@ passport.use(
         (token, callback) => {
             try {
                 token = jwt.verify(token, process.env.JWT_SECRET);
-            } catch (error) {
-                throw new UnauthenticatedError;
+            } catch ({ message }) {
+                throw new UnauthenticatedError(message);
             }
 
             user.findById(token.id)
                 .then(userData => {
-                    if (!userData) throw new UserNotFoundError;
+                    if (!userData) throw new NotFoundError(`User with id ${token.id}.`);
                     callback(null, userData)
                 })
                 .catch(callback);

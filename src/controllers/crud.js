@@ -5,29 +5,28 @@ import checkAuth from '../utilities/checkAuth.js';
 import { BadRequestError, ForbiddenError } from '../utilities/error.js';
 
 const checkRequest = ({ body, user }) => {
-    if(body.owner && body.owner !== user.id)
-        throw new ForbiddenError("You can't set the owner to someone else");
-    if(body.buyer)
-        throw new BadRequestError("You can't set the buyer");
+    if(body.owner || body.buyer)
+        throw new ForbiddenError("You can't set the owner or buyer.");
 };
 
 const clearSensitive = ({ location, buyer, suggestion, ...rest }) => rest;
 
 const insertUser = data =>
     mongo.readUser(data.owner)
-        .then(owner => ({...data, owner }))
+        .then(owner => ({ ...data, owner }))
             .then(data => data.buyer
                 ? mongo.readUser(data.buyer)
-                    .then(buyer => ({...data, buyer }))
+                    .then(buyer => ({ ...data, buyer }))
                 : data
             )
             
 const create = (req, res, next) => {
     checkRequest(req);
     
-    const crap = new Crap(req.body);
+    const crap = new Crap({ ...req.body, owner: req.user.id });
     crap.validate()
-        .then(() => gcs.write(crap))
+        .then(() => gcs.write(req.body))
+        .then(names => crap.images = names)
         .then(() => crap.save({ validateBeforeSave: false }))
         .then(data => res.status(201).json({ data }))
         .catch(next);
@@ -75,22 +74,22 @@ const getPartial = (req, res, next) =>
         .then(data => res.json({ data }))
         .catch(next);
 
-const get = (req, res, next) => {
-    const related = req.doc.owner.equals(req.user.id) || req.doc.buyer?.equals(req.user.id);
-
+const get = (req, res, next) =>
     gcs.read(req.doc)
-        .then(data => related ? data : clearSensitive(data))
+        .then(data => checkAuth(req, ['owner', 'buyer'], true)
+            ? data
+            : clearSensitive(data)
+        )
         .then(insertUser)
         .then(data => res.json({ data }))
         .catch(next);
-};
 
 const update = (req, res, next) => {
     checkRequest(req);
-    checkAuth(req, 'owner');
+    checkAuth(req, ['owner']);
 
-    const { images } = req.doc;
-    req.doc.overwrite({});
+    const { images, owner } = req.doc;
+    req.doc.overwrite({ owner });
     req.doc.set(req.body);
     req.doc.validate()
         .then(() => Promise.all([
@@ -104,7 +103,7 @@ const update = (req, res, next) => {
 
 const updatePartial = (req, res, next) => {
     checkRequest(req);
-    checkAuth(req, 'owner');
+    checkAuth(req, ['owner']);
 
     const { images } = req.doc;
     req.doc.set(req.body);
@@ -119,7 +118,7 @@ const updatePartial = (req, res, next) => {
 };
 
 const remove = (req, res, next) => {
-    checkAuth(req, 'owner');
+    checkAuth(req, ['owner']);
 
     req.doc.deleteOne()
         .then(gcs.remove)

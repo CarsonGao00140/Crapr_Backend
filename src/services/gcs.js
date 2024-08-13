@@ -11,13 +11,13 @@ const keyFilename = path.resolve(dirname, '../../credentials.json');
 const storage = new Storage({ keyFilename });
 const bucket = storage.bucket(process.env.GOOGLE_STORAGE_BUCKET);
 
-const write = doc => Promise.all(
-    doc.images.map(image => {
+const write = ({ images }) => Promise.all(
+    images.map(image => {
         const name = uuid();
         return bucket.file(name).save(image)
             .then(() => name);
     })
-).then(names => doc.images = names);
+)
 
 const read = doc => Promise.all(
     doc.images.map(name => bucket.file(name).getSignedUrl({
