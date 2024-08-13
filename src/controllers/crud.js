@@ -89,13 +89,13 @@ const update = (req, res, next) => {
     checkAuth(req, ['owner']);
 
     const { images, owner } = req.doc;
-    req.doc.overwrite({ owner });
-    req.doc.set(req.body);
+    req.doc.overwrite({ ...req.body, owner });
     req.doc.validate()
         .then(() => Promise.all([
             gcs.remove({ images }),
-            gcs.write(req.doc)
+            gcs.write(req.body)
         ]))
+        .then(([, names]) => req.doc.images = names)
         .then(() => req.doc.save({ validateBeforeSave: false }))
         .then(data => res.json({ data }))
         .catch(next);
@@ -112,6 +112,7 @@ const updatePartial = (req, res, next) => {
             gcs.remove({ images }),
             gcs.write(req.doc)
         ]))
+        .then(([, names]) => req.doc.images = names)
         .then(() => req.doc.save({ validateBeforeSave: false }))
         .then(data => res.json({ data }))
         .catch(next);
@@ -120,8 +121,9 @@ const updatePartial = (req, res, next) => {
 const remove = (req, res, next) => {
     checkAuth(req, ['owner']);
 
+    const { images } = req.doc;
     req.doc.deleteOne()
-        .then(gcs.remove)
+        .then(() => gcs.remove(images))
         .then(() => res.status(204).end())
         .catch(next);
 };

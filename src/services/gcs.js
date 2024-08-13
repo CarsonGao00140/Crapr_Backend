@@ -26,8 +26,8 @@ const read = doc => Promise.all(
     }).then(url => url[0]))
 ).then(images => ({ ...doc._doc, images }));
 
-const remove = data => Promise.all(
-    data.images.map(name => bucket.file(name).delete())
+const remove = images => Promise.all(
+    images.map(name => bucket.file(name).delete())
 );
 
 export default { write, read, remove };

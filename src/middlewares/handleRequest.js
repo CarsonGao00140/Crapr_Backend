@@ -6,15 +6,13 @@ import { BadRequestError } from '../utilities/error.js';
 const multer = Multer();
 
 const parseForm = (req, res, next) =>
-    multer.any()(req, res, err => {   
+    multer.any()(req, res, err => {
         try {
             if (err) throw err;
-            if (!req.body.data) throw new Error("The 'data' field is required.");
-            req.body = JSON.parse(req.body.data);
+            req.body = JSON.parse(req.body.data || '{}');
         } catch ({ message }) {
             return next(new BadRequestError(message));
         };
-
         req.files.forEach(({ fieldname, buffer }) => {
             const array = lodash.get(req.body, fieldname, []);
             lodash.set(req.body, fieldname, [...array, buffer]);
