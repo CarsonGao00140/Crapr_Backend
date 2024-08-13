@@ -92,7 +92,7 @@ const update = (req, res, next) => {
     req.doc.overwrite({ ...req.body, owner });
     req.doc.validate()
         .then(() => Promise.all([
-            gcs.remove({ images }),
+            gcs.remove(images),
             gcs.write(req.body)
         ]))
         .then(([, names]) => req.doc.images = names)
@@ -109,8 +109,8 @@ const updatePartial = (req, res, next) => {
     req.doc.set(req.body);
     req.doc.validate()
         .then(() => req.body.images && Promise.all([
-            gcs.remove({ images }),
-            gcs.write(req.doc)
+            gcs.remove(images),
+            gcs.write(req.body)
         ]))
         .then(([, names]) => req.doc.images = names)
         .then(() => req.doc.save({ validateBeforeSave: false }))
