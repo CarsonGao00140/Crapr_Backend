@@ -30,7 +30,7 @@ router.get('/google/callback',
 
         const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET);
         res.cookie('token', encodeURIComponent(token), {
-            secure: true,
+            // secure: true,
             sameSite: 'None'
         });
         res.redirect(url);
