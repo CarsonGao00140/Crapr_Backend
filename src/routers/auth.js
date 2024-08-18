@@ -29,7 +29,7 @@ router.get('/google/callback',
             : "/success";
 
         const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET);
-        res.cookie('token', encodeURIComponent(token));
+        res.cookie('token', encodeURIComponent(token), {sameSite: 'None'});
         res.redirect(url);
     }
 );
