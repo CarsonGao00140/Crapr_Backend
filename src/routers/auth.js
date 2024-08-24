@@ -10,7 +10,7 @@ router.use(handleRequest());
 router.get('/google', (req, res) => {
     const { redirect_url } = req.query;
     const state = redirect_url
-        ? encodeURI(JSON.stringify({ redirect_url }))
+        ? encodeURIComponent(JSON.stringify({ redirect_url }))
         : undefined;
 
     return passport.authenticate("google", {
@@ -24,16 +24,14 @@ router.get('/google/callback',
         "google", { failureRedirect: "/fail", session: false }
     ),
     (req, res) => {
-        const url = req.query.state
-            ? JSON.parse(decodeURI(req.query.state)).redirect_url
-            : "/success";
-
+        const state = req.query.state
+            ? JSON.parse(decodeURIComponent(req.query.state))
+            : undefined;
+        
+        const params = new URLSearchParams(state);
         const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET);
-        res.cookie('token', encodeURIComponent(token), {
-            // secure: true,
-            sameSite: 'None'
-        });
-        res.redirect(url);
+        params.append("token", token);
+        res.redirect(`${process.env.WEB_URL}/signin?${params}`);
     }
 );
 

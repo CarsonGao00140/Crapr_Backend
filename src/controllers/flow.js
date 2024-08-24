@@ -71,7 +71,10 @@ const flush = (req, res, next) => {
     checkAuth(req, ['owner']);
     stepStatus(req, 'AGREED', 'FLUSHED');
 
+    const { suggestion, ...rest} = req.doc._doc;
+    req.doc.overwrite(rest);
     req.doc.save()
+        .then(({ _doc }) => insertUser(_doc))
         .then(data => res.json({ data }))
         .catch(next);
 };

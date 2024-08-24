@@ -53,10 +53,7 @@ const getAll = (req, res, next) => {
     })
         .then(docs => Promise.all(docs.map(doc =>
             gcs.read(doc)
-                .then(data => checkAuth({...req, doc: doc}, ['owner', 'buyer'], true)
-                    ? data
-                    : clearSensitive(data)
-                )
+                .then(clearSensitive)
                 .then(insertUser)
         )))
         .then(data => res.json({ data }))
