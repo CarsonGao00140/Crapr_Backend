@@ -31,7 +31,6 @@ router.get('/google/callback',
         const params = new URLSearchParams(state);
         const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET);
         params.append("token", token);
-        res.cookie("test", "hello world", { path: '/', domain: process.env.WEB_URL, sameSite: 'None', secure: true });
         res.redirect(`${process.env.WEB_URL}/signin?${params}`);
     }
 );
