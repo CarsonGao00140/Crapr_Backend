@@ -1,4 +1,3 @@
-import cookie from 'cookie';
 import passport from 'passport';
 import { UnauthenticatedError } from '../utilities/error.js';
 
