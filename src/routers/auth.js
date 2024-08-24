@@ -27,7 +27,6 @@ router.get('/google/callback',
         const state = req.query.state
             ? JSON.parse(decodeURIComponent(req.query.state))
             : undefined;
-        
         const params = new URLSearchParams(state);
         const token = jwt.sign({ id: req.user._id }, process.env.JWT_SECRET);
         params.append("token", token);
