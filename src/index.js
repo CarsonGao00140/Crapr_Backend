@@ -9,7 +9,7 @@ import 'dotenv/config';
 import './utilities/database.js';
 import './utilities/passport.js';
 
-const strategy = { origin: process.env.WEB_URL, credentials: true };
+const strategy = { origin: process.env.WEB_URL };
 
 const app = Express();
 
