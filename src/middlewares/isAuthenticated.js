@@ -1,11 +1,11 @@
 import cookie from 'cookie';
 import passport from 'passport';
-import { UnauthenticatedError, BadRequestError } from '../utilities/error.js';
+import { UnauthenticatedError } from '../utilities/error.js';
 
 export default (req, res, next) => {
     req.headers.authorization ||= `bearer ${cookie.parse(req.headers.cookie || '').token}`;
     if (!req.headers.authorization)
-        throw new BadRequestError("JWT token not provided.");
+        throw new UnauthenticatedError("JWT token not provided.");
 
     return passport.authenticate("bearer", {
         session: false,
